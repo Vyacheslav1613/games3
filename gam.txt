@@ -1,0 +1,80 @@
+package src.main;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+class Main{
+    public static void main(String[] args) throws IOException {
+        String gamePathFolder = "E:/games/savegames/";
+        String gamePath = gamePathFolder + "save1.dat";
+        List<String> listZIP = new ArrayList<>();
+        GameProgress gameProgress = new GameProgress(100, 2, 13, 25.0);
+        saveGame(gamePath, gameProgress, listZIP);
+
+        String gamePath2 = gamePathFolder + "save2.dat";
+        GameProgress gameProgress2 = new GameProgress(75, 3, 15, 30.0);
+        saveGame(gamePath2, gameProgress2, listZIP);
+
+        String gamePath3 = gamePathFolder + "save3.dat";
+        GameProgress gameProgress3 = new GameProgress(90, 3, 16, 35.0);
+        saveGame(gamePath3, gameProgress3, listZIP);
+
+        System.out.println(listZIP);
+
+        String ZIP = gamePathFolder + "zip.zip";
+        zipFiles(ZIP, listZIP);
+        DelZIP(listZIP, gamePathFolder);
+    }
+
+    private static void zipFiles(String zip, List<String> listZIP) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(zip);
+             ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
+            for (String filePath : listZIP) {
+                File file = new File(filePath);
+                FileInputStream fileInputStream = new FileInputStream(file);
+
+                ZipEntry zipEntry = new ZipEntry(file.getName());
+                zipOutputStream.putNextEntry(zipEntry);
+
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = fileInputStream.read(buffer)) > 0) {
+                    zipOutputStream.write(buffer, 0, length);
+                }
+                fileInputStream.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void DelZIP(List<String> listZIP, String gamePathFolder) {
+        File savegamesFolder = new File(gamePathFolder);
+        File[] files = savegamesFolder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                //System.out.println(file);
+                if (file.isFile() &&
+                        !listZIP.contains(file.getAbsolutePath().replace("\\", "/"))
+                        && !file.getName().equals("zip.zip")) {
+                    file.delete();
+                }
+            }
+        }
+    }
+    public static void saveGame(String gamePath, GameProgress gameProgress, List<String> listZIP) throws IOException {
+        File saveFolder = new File(gamePath);
+        saveFolder.createNewFile();
+        try (FileOutputStream fos = new FileOutputStream(gamePath);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(gameProgress);
+            System.out.println("Результат сохранен в файле " + gamePath);
+            listZIP.add(gamePath);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+}

@@ -1,0 +1,4 @@
+Файлы и директории успешно созданы:
+E:\games\src\main\Main.java
+E:\games\src\main\Utils.java
+E:\games\temp\temp.txt
